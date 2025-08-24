@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 // --- Nodemailer via SendGrid SMTP ---
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({  // ✅ Fixed: createTransport not createTransporter
   host: "smtp.sendgrid.net",
   port: 587,
   secure: false,
@@ -47,9 +47,10 @@ app.post("/send-order", async (req, res) => {
     // Check environment variables
     if (!process.env.SENDGRID_API_KEY || !process.env.ORDER_FROM_EMAIL || !process.env.ORDER_TO_EMAIL) {
       console.error("❌ Missing environment variables");
+      console.error("Available env vars:", Object.keys(process.env).filter(k => k.includes('ORDER') || k.includes('SENDGRID')));
       return res.status(500).json({ 
         success: false, 
-        error: "Server configuration error" 
+        error: "Server configuration error - missing environment variables" 
       });
     }
 
@@ -124,4 +125,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Backend running on port ${PORT}`);
   console.log(`📧 Email config: FROM=${process.env.ORDER_FROM_EMAIL} TO=${process.env.ORDER_TO_EMAIL}`);
+  console.log(`🔑 SendGrid API Key configured: ${process.env.SENDGRID_API_KEY ? 'Yes' : 'No'}`);
 });
