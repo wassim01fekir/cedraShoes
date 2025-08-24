@@ -946,29 +946,31 @@
                     
                     // Send email notification to store owner
                     // Send order via backend email
-                    fetch("http://localhost:3000/send-order", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            name: orderData.customer.name,
-                            phone: orderData.customer.phone,
-                            address: orderData.customer.address,
-                            items: orderData.items.map(item => `${item.name} x${item.quantity}`),
-                            total: orderData.total.toLocaleString()
-                        })
+                    
+                  fetch("https://cedrashoes.onrender.com/send-order", {  // ✅ Fixed URL
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      name: orderData.customer.name,
+                      phone: orderData.customer.phone,
+                      address: orderData.customer.address,
+                      items: orderData.items.map(item => `${item.name} x${item.quantity}`),
+                      total: orderData.total
                     })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert("✅ تم إرسال طلبك بنجاح! سنتواصل معك قريباً.");
-                        } else {
-                            alert("❌ حدث خطأ أثناء إرسال الطلب إلى البريد.");
-                        }
-                    })
-                    .catch(err => {
-                        console.error("❌ Fetch error:", err);
-                        alert("❌ تعذر الاتصال بالخادم.");
-                    });
+                  })
+                  .then(r => r.json())
+                  .then(data => {
+                    if (data.success) {
+                      console.log("Order email sent successfully");
+                    } else {
+                      console.warn("Email API error:", data.error);
+                    }
+                  })
+                  .catch(err => {
+                    console.error("Email fetch failed:", err);
+                    // Continue with order processing even if email fails
+                  });
+
 
                     
                     alert('تم تقديم طلبكم بنجاح! رقم الطلب: ' + orderData.orderNumber + '\nسنتواصل معكم قريباً.');
