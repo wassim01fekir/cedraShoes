@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - إدارة الطلبات</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .header h1 {
+            color: #1e3c72;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .filters {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group select, .filter-group input {
+            padding: 0.7rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        
+        .filter-group select:focus, .filter-group input:focus {
+            outline: none;
+            border-color: #1e3c72;
+        }
+        
+        .orders-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .orders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .export-btn {
+            background: linear-gradient(45deg, #00d2d3, #10ac84);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 172, 132, 0.3);
+        }
+        
+        .orders-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .order-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 1.5rem;
+            background: white;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .order-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .order-card.pending {
+            border-left: 5px solid #ffa502;
+        }
+        
+        .order-card.confirmed {
+            border-left: 5px solid #3742fa;
+        }
+        
+        .order-card.shipped {
+            border-left: 5px solid #2ed573;
+        }
+        
+        .order-card.delivered {
+            border-left: 5px solid #1e90ff;
+        }
+        
+        .order-card.cancelled {
+            border-left: 5px solid #ff4757;
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .order-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+        
+        .order-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .order-status {
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .status-pending { background: #ffa502; }
+        .status-confirmed { background: #3742fa; }
+        .status-shipped { background: #2ed573; }
+        .status-delivered { background: #1e90ff; }
+        .status-cancelled { background: #ff4757; }
+        
+        .customer-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            min-width: 60px;
+        }
+        
+        .info-value {
+            color: #333;
+        }
+        
+        .phone-link, .email-link {
+            color: #1e3c72;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .phone-link:hover, .email-link:hover {
+            color: #2a5298;
+            text-decoration: underline;
+        }
+        
+        .order-items {
+            margin-bottom: 1.5rem;
+        }
+        
+        .order-items h4 {
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+        }
+        
+        .items-list {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .item-details {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .item-price {
+            font-weight: bold;
+            color: #1e3c72;
+        }
+        
+        .order-total {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: linear-gradient(45deg, #e3f2fd, #f1f8e9);
+            border-radius: 10px;
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.7rem 1rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-confirm {
+            background: linear-gradient(45deg, #3742fa, #2f3542);
+            color: white;
+        }
+        
+        .btn-ship {
+            background: linear-gradient(45deg, #2ed573, #1e90ff);
+            color: white;
+        }
+        
+        .btn-deliver {
+            background: linear-gradient(45deg, #1e90ff, #00d2d3);
+            color: white;
+        }
+        
+        .btn-cancel {
+            background: linear-gradient(45deg, #ff4757, #ff3838);
+            color: white;
+        }
+        
+        .btn-contact {
+            background: linear-gradient(45deg, #25d366, #128c7e);
+            color: white;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            font-size: 1.2rem;
+        }
+        
+        .no-orders {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            font-size: 1.2rem;
+        }
+        
+        .auth-container {
+            max-width: 400px;
+            margin: 10vh auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .auth-input {
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .auth-input:focus {
+            outline: none;
+            border-color: #1e3c72;
+        }
+        
+        .auth-btn {
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30, 60, 114, 0.3);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 9999;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(45deg, #2ed573, #1e90ff);
+        }
+        
+        .notification.error {
+            background: linear-gradient(45deg, #ff4757, #ff3838);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .customer-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .order-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة تسجيل الدخول -->
+    <div id="authContainer" class="auth-container">
+        <h2 style="text-align: center; color: #1e3c72; margin-bottom: 2rem;">تسجيل دخول المدير</h2>
+        <form class="auth-form" onsubmit="adminLogin(event)">
+            <input type="email" id="adminEmail" class="auth-input" placeholder="البريد الإلكتروني" required>
+            <input type="password" id="adminPassword" class="auth-input" placeholder="كلمة المرور" required>
+            <button type="submit" class="auth-btn">دخول</button>
+        </form>
+    </div>
+
+    <!-- لوحة التحكم الرئيسية -->
+    <div id="adminPanel" style="display: none;">
+        <div class="container">
+            <div class="header">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <h1>🛒 لوحة التحكم</h1>
+                        <p style="color: #666;">إدارة طلبات متجر الأحذية</p>
+                    </div>
+                    <button onclick="logout()" style="background: #ff4757; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer;">تسجيل خروج</button>
+                </div>
+            </div>
+
+            <!-- إحصائيات سريعة -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalOrders">0</div>
+                    <div class="stat-label">إجمالي الطلبات</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingOrders">0</div>
+                    <div class="stat-label">طلبات معلقة</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRevenue">0 دج</div>
+                    <div class="stat-label">إجمالي المبيعات</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="todayOrders">0</div>
+                    <div class="stat-label">طلبات اليوم</div>
+                </div>
+            </div>
+
+            <!-- فلاتر البحث -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label>حالة الطلب:</label>
+                    <select id="statusFilter" onchange="filterOrders()">
+                        <option value="">جميع الحالات</option>
+                        <option value="pending">معلق</option>
+                        <option value="confirmed">مؤكد</option>
+                        <option value="shipped">مرسل</option>
+                        <option value="delivered">تم التوصيل</option>
+                        <option value="cancelled">ملغي</option>
+                    </select>
+
+                    <label>من تاريخ:</label>
+                    <input type="date" id="dateFrom" onchange="filterOrders()">
+
+                    <label>إلى تاريخ:</label>
+                    <input type="date" id="dateTo" onchange="filterOrders()">
+
+                    <label>البحث:</label>
+                    <input type="text" id="searchQuery" placeholder="رقم الطلب أو اسم العميل" onchange="filterOrders()">
+                </div>
+            </div>
+
+            <!-- قائمة الطلبات -->
+            <div class="orders-container">
+                <div class="orders-header">
+                    <h3>الطلبات (<span id="ordersCount">0</span>)</h3>
+                    <button class="export-btn" onclick="exportOrders()">تصدير Excel</button>
+                </div>
+                
+                <div id="ordersLoading" class="loading">
+                    جاري تحميل الطلبات...
+                </div>
+                
+                <div id="ordersGrid" class="orders-grid" style="display: none;">
+                    <!-- سيتم ملء الطلبات هنا -->
+                </div>
+                
+                <div id="noOrders" class="no-orders" style="display: none;">
+                    لا توجد طلبات حالياً
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+
+        // TODO: Replace with your Firebase config (same as main website)
+        const firebaseConfig = {
+
+          apiKey: "AIzaSyDW8Amk_0kuIjm2VoY8eEZQKznmYS0eGNQ",
+
+          authDomain: "cedrashoes-498aa.firebaseapp.com",
+
+          projectId: "cedrashoes-498aa",
+
+          storageBucket: "cedrashoes-498aa.firebasestorage.app",
+
+          messagingSenderId: "169034353080",
+
+          appId: "1:169034353080:web:cf697386679114cde1e74d",
+
+          measurementId: "G-PJRS02YM20"
+
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Global variables
+        let allOrders = [];
+        let filteredOrders = [];
+
+        // Make functions globally available
+        window.firebaseDB = db;
+        window.firebaseAuth = auth;
+        window.firebaseFunctions = { 
+            getDocs, collection, doc, updateDoc, query, orderBy, where, onSnapshot,
+            signInWithEmailAndPassword, signOut
+        };
+
+        // Listen for auth state changes
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                showAdminPanel();
+                loadOrders();
+                startRealTimeListening();
+            } else {
+                showAuthContainer();
+            }
+        });
+
+        function showAuthContainer() {
+            document.getElementById('authContainer').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+
+        function showAdminPanel() {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+        }
+
+        // Real-time listening for new orders
+        function startRealTimeListening() {
+            const ordersRef = collection(db, 'orders');
+            const q = query(ordersRef, orderBy('createdAt', 'desc'));
+            
+            onSnapshot(q, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        // New order notification
+                        if (allOrders.length > 0) { // Don't show on initial load
+                            showNotification('طلب جديد وصل!', 'success');
+                            // Play notification sound
+                            playNotificationSound();
+                        }
+                    }
+                });
+                
+                // Update orders list
+                allOrders = [];
+                snapshot.forEach((doc) => {
+                    allOrders.push({ id: doc.id, ...doc.data() });
+                });
+                
+                updateStats();
+                filterOrders();
+            });
+        }
+
+        function playNotificationSound() {
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAABACAAAQBAEAAAIAAAAQAEAAA=');
+                audio.play().catch(() => {});
+            } catch(e) {}
+        }
+
+        window.loadOrders = loadOrders;
+        window.updateStats = updateStats;
+        window.filterOrders = filterOrders;
+        window.showNotification = showNotification;
+    </script>
+
+    <script>
+        // Admin authentication
+        async function adminLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            try {
+                await window.firebaseFunctions.signInWithEmailAndPassword(window.firebaseAuth, email, password);
+                showNotification('تم تسجيل الدخول بنجاح', 'success');
+            } catch (error) {
+                showNotification('خطأ في تسجيل الدخول: ' + error.message, 'error');
+            }
+        }
+
+        // Logout
+        async function logout() {
+            try {
+                await window.firebaseFunctions.signOut(window.firebaseAuth);
+                showNotification('تم تسجيل الخروج', 'success');
+            } catch (error) {
+                showNotification('خطأ في تسجيل الخروج', 'error');
+            }
+        }
+
+        // Load orders from Firebase
+        async function loadOrders() {
+            document.getElementById('ordersLoading').style.display = 'block';
+            document.getElementById('ordersGrid').style.display = 'none';
+            document.getElementById('noOrders').style.display = 'none';
+            
+            try {
+                if (!window.firebaseDB) {
+                    throw new Error('Firebase not initialized');
+                }
+                
+                const ordersRef = window.firebaseFunctions.collection(window.firebaseDB, 'orders');
+                const q = window.firebaseFunctions.query(ordersRef, window.firebaseFunctions.orderBy('createdAt', 'desc'));
+                const querySnapshot = await window.firebaseFunctions.getDocs(q);
+                
+                allOrders = [];
+                querySnapshot.forEach((doc) => {
+                    allOrders.push({ id: doc.id, ...doc.data() });
+                });
+                
+                updateStats();
+                filterOrders();
+                
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                showNotification('خطأ في تحميل الطلبات: ' + error.message, 'error');
+                document.getElementById('ordersLoading').style.display = 'none';
+                document.getElementById('noOrders').style.display = 'block';
+                document.getElementById('noOrders').innerHTML = 'خطأ في تحميل الطلبات. تأكد من الاتصال بالإنترنت.';
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalOrders = allOrders.length;
+            const pendingOrders = allOrders.filter(order => order.status === 'pending' || !order.status).length;
+            const totalRevenue = allOrders
+                .filter(order => order.status !== 'cancelled')
+                .reduce((sum, order) => sum + (order.total || 0), 0);
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayOrders = allOrders.filter(order => {
+                const orderDate = order.createdAt?.toDate ? order.createdAt.toDate() : new Date(order.createdAt);
+                return orderDate >= today;
+            }).length;
+            
+            document.getElementById('totalOrders').textContent = totalOrders;
+            document.getElementById('pendingOrders').textContent = pendingOrders;
+            document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString() + ' دج';
+            document.getElementById('todayOrders').textContent = todayOrders;
+        }
+
+        // Filter orders
+        function filterOrders() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            const searchQuery = document.getElementById('searchQuery').value.toLowerCase();
+            
+            filteredOrders = allOrders.filter(order => {
+                // Status filter
+                if (statusFilter && (order.status || 'pending') !== statusFilter) {
+                    return false;
+                }
+                
+                // Date filter
+                if (dateFrom || dateTo) {
+                    const orderDate = order.createdAt?.toDate ? order.createdAt.toDate() : new Date(order.createdAt);
+                    const orderDateStr = orderDate.toISOString().split('T')[0];
+                    
+                    if (dateFrom && orderDateStr < dateFrom) return false;
+                    if (dateTo && orderDateStr > dateTo) return false;
+                }
+                
+                // Search filter
+                if (searchQuery) {
+                    const searchText = `${order.orderNumber || ''} ${order.customer?.name || ''}`.toLowerCase();
+                    if (!searchText.includes(searchQuery)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            displayOrders();
+        }
+
+        // Display orders
+        function displayOrders() {
+            document.getElementById('ordersLoading').style.display = 'none';
+            document.getElementById('ordersCount').textContent = filteredOrders.length;
+            
+            if (filteredOrders.length === 0) {
+                document.getElementById('ordersGrid').style.display = 'none';
+                document.getElementById('noOrders').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('noOrders').style.display = 'none';
+            document.getElementById('ordersGrid').style.display = 'block';
+            
+            const ordersGrid = document.getElementById('ordersGrid');
+            ordersGrid.innerHTML = filteredOrders.map(order => createOrderCard(order)).join('');
+        }
+
+        // Create order card HTML
+        function createOrderCard(order) {
+            const status = order.status || 'pending';
+            const orderDate = order.createdAt?.toDate ? order.createdAt.toDate() : new Date(order.createdAt);
+            const formattedDate = orderDate.toLocaleString('ar-SA');
+            
+            const statusLabels = {
+                pending: 'معلق',
+                confirmed: 'مؤكد',
+                shipped: 'مرسل',
+                delivered: 'تم التوصيل',
+                cancelled: 'ملغي'
+            };
+            
+            const itemsHtml = order.items?.map(item => `
+                <div class="item">
+                    <div>
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-details">الكمية: ${item.quantity}</div>
+                    </div>
+                    <div class="item-price">${(item.price * item.quantity).toLocaleString()} دج</div>
+                </div>
+            `).join('') || '';
+            
+            return `
+                <div class="order-card ${status}">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-number">${order.orderNumber || 'N/A'}</div>
+                            <div class="order-date">${formattedDate}</div>
+                        </div>
+                        <span class="order-status status-${status}">${statusLabels[status]}</span>
+                    </div>
+                    
+                    <div class="customer-info">
+                        <div class="info-item">
+                            <span class="info-label">👤</span>
+                            <span class="info-value">${order.customer?.name || 'غير محدد'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">📞</span>
+                            <a href="tel:${order.customer?.phone || ''}" class="phone-link">${order.customer?.phone || 'غير محدد'}</a>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">✉️</span>
+                            <a href="mailto:${order.customer?.email || ''}" class="email-link">${order.customer?.email || 'غير محدد'}</a>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">📍</span>
+                            <span class="info-value">${order.customer?.address || 'غير محدد'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-items">
+                        <h4>المنتجات المطلوبة:</h4>
+                        <div class="items-list">
+                            ${itemsHtml}
+                        </div>
+                    </div>
+                    
+                    <div class="order-total">
+                        المبلغ الإجمالي: ${order.total?.toLocaleString() || 0} دج
+                    </div>
+                    
+                    <div class="order-actions">
+                        ${status === 'pending' ? `
+                            <button class="action-btn btn-confirm" onclick="updateOrderStatus('${order.id}', 'confirmed')">تأكيد الطلب</button>
+                            <button class="action-btn btn-cancel" onclick="updateOrderStatus('${order.id}', 'cancelled')">إلغاء الطلب</button>
+                        ` : ''}
+                        ${status === 'confirmed' ? `
+                            <button class="action-btn btn-ship" onclick="updateOrderStatus('${order.id}', 'shipped')">شحن الطلب</button>
+                            <button class="action-btn btn-cancel" onclick="updateOrderStatus('${order.id}', 'cancelled')">إلغاء الطلب</button>
+                        ` : ''}
+                        ${status === 'shipped' ? `
+                            <button class="action-btn btn-deliver" onclick="updateOrderStatus('${order.id}', 'delivered')">تأكيد التوصيل</button>
+                        ` : ''}
+                        <button class="action-btn btn-contact" onclick="contactCustomer('${order.customer?.phone || ''}', '${order.orderNumber || ''}')">اتصال واتساب</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update order status
+        async function updateOrderStatus(orderId, newStatus) {
+            try {
+                const orderRef = window.firebaseFunctions.doc(window.firebaseDB, 'orders', orderId);
+                await window.firebaseFunctions.updateDoc(orderRef, {
+                    status: newStatus,
+                    updatedAt: new Date()
+                });
+                
+                const statusLabels = {
+                    confirmed: 'تم تأكيد الطلب',
+                    shipped: 'تم شحن الطلب',
+                    delivered: 'تم توصيل الطلب',
+                    cancelled: 'تم إلغاء الطلب'
+                };
+                
+                showNotification(statusLabels[newStatus] || 'تم تحديث حالة الطلب', 'success');
+                
+                // Update local data
+                const orderIndex = allOrders.findIndex(order => order.id === orderId);
+                if (orderIndex !== -1) {
+                    allOrders[orderIndex].status = newStatus;
+                    allOrders[orderIndex].updatedAt = new Date();
+                }
+                
+                updateStats();
+                filterOrders();
+                
+            } catch (error) {
+                showNotification('خطأ في تحديث حالة الطلب: ' + error.message, 'error');
+            }
+        }
+
+        // Contact customer via WhatsApp
+        function contactCustomer(phoneNumber, orderNumber) {
+            if (!phoneNumber) {
+                showNotification('رقم الهاتف غير متوفر', 'error');
+                return;
+            }
+            
+            const message = `مرحباً! بخصوص طلبكم رقم ${orderNumber} في متجر الأحذية. كيف يمكنني مساعدتكم؟`;
+            const whatsappUrl = `https://wa.me/${phoneNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Export orders to Excel
+        function exportOrders() {
+            if (filteredOrders.length === 0) {
+                showNotification('لا توجد طلبات للتصدير', 'error');
+                return;
+            }
+            
+            // Create CSV content
+            const csvContent = createCSVContent(filteredOrders);
+            
+            // Download CSV file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `orders_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('تم تصدير الطلبات بنجاح', 'success');
+        }
+
+        // Create CSV content
+        function createCSVContent(orders) {
+            const headers = [
+                'رقم الطلب',
+                'اسم العميل',
+                'الهاتف',
+                'البريد الإلكتروني',
+                'العنوان',
+                'المنتجات',
+                'المبلغ الإجمالي',
+                'الحالة',
+                'تاريخ الطلب'
+            ];
+            
+            let csvContent = headers.join(',') + '\n';
+            
+            orders.forEach(order => {
+                const orderDate = order.createdAt?.toDate ? order.createdAt.toDate() : new Date(order.createdAt);
+                const items = order.items?.map(item => `${item.name} x${item.quantity}`).join('; ') || '';
+                const status = order.status || 'pending';
+                
+                const statusLabels = {
+                    pending: 'معلق',
+                    confirmed: 'مؤكد',
+                    shipped: 'مرسل',
+                    delivered: 'تم التوصيل',
+                    cancelled: 'ملغي'
+                };
+                
+                const row = [
+                    `"${order.orderNumber || ''}"`,
+                    `"${order.customer?.name || ''}"`,
+                    `"${order.customer?.phone || ''}"`,
+                    `"${order.customer?.email || ''}"`,
+                    `"${order.customer?.address || ''}"`,
+                    `"${items}"`,
+                    `"${order.total || 0}"`,
+                    `"${statusLabels[status]}"`,
+                    `"${orderDate.toLocaleString('ar-SA')}"`
+                ].join(',');
+                
+                csvContent += row + '\n';
+            });
+            
+            return csvContent;
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Remove notification after 4 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // Initialize admin panel
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default date filters
+            const today = new Date();
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            
+            document.getElementById('dateFrom').value = weekAgo.toISOString().split('T')[0];
+            document.getElementById('dateTo').value = today.toISOString().split('T')[0];
+            
+            // Auto-refresh every 30 seconds if authenticated
+            setInterval(() => {
+                if (window.firebaseAuth?.currentUser) {
+                    // Don't reload, real-time listener handles updates
+                    updateStats();
+                }
+            }, 30000);
+        });
+    </script>
+</body>
+</html>
